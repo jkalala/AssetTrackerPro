@@ -39,8 +39,8 @@ export default function EnhancedLoginForm() {
         // Demo mode login
         const result = await demoAuth.signIn(email, password)
         if (result.success) {
-          router.push("/")
-          router.refresh()
+          console.log("Demo login successful, redirecting to dashboard")
+          router.replace("/")
         } else {
           setError(result.error || "Login failed")
         }
@@ -61,8 +61,17 @@ export default function EnhancedLoginForm() {
     setPassword(demoPassword)
   }
 
-  const handleQuickDemo = () => {
-    router.push("/")
+  const handleQuickDemo = async () => {
+    if (isDemo && demoAuth) {
+      // Auto-login with demo credentials
+      const result = await demoAuth.signIn("demo@assettracker.com", "demo123")
+      if (result.success) {
+        console.log("Quick demo login successful, redirecting to dashboard")
+        router.replace("/")
+      }
+    } else {
+      router.replace("/")
+    }
   }
 
   return (

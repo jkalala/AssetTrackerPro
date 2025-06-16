@@ -72,7 +72,9 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
     const savedUser = localStorage.getItem("demo-auth-user")
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser))
+        const parsedUser = JSON.parse(savedUser)
+        console.log("DemoAuth: Restored user from localStorage:", parsedUser.email)
+        setUser(parsedUser)
       } catch (error) {
         console.error("Error parsing saved user:", error)
         localStorage.removeItem("demo-auth-user")
@@ -82,6 +84,7 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    console.log("DemoAuth: Attempting sign in for:", email)
     setLoading(true)
 
     // Simulate network delay
@@ -91,17 +94,20 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
 
     if (demoUser) {
       const { password: _, ...userWithoutPassword } = demoUser
+      console.log("DemoAuth: Sign in successful for:", email)
       setUser(userWithoutPassword)
       localStorage.setItem("demo-auth-user", JSON.stringify(userWithoutPassword))
       setLoading(false)
       return { success: true }
     } else {
+      console.log("DemoAuth: Sign in failed for:", email)
       setLoading(false)
       return { success: false, error: "Invalid email or password" }
     }
   }
 
   const signOut = async () => {
+    console.log("DemoAuth: Signing out")
     setUser(null)
     localStorage.removeItem("demo-auth-user")
   }

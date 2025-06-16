@@ -15,6 +15,7 @@ export default function HomePage() {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [assets, setAssets] = useState([])
+  
   const demoAuth = useDemoAuth()
   const realAuth = useAuth()
   const supabase = createClient()
@@ -26,21 +27,30 @@ export default function HomePage() {
   const authLoading = hasSupabaseConfig ? realAuth?.loading : demoAuth?.loading || false
 
   useEffect(() => {
-    async function loadDashboardData() {
-      if (authLoading) return
-
-      if (!currentUser) {
-        // No user logged in, redirect to login
-        router.push("/login")
+    async function handleAuthAndData() {
+      console.log("HomePage: Auth loading:", authLoading, "User:", !!currentUser)
+      
+      // Wait for auth to finish loading
+      if (authLoading) {
         return
       }
 
-      try {
-        setIsLoading(true)
-        setUser(currentUser)
+      // If no user, redirect to login
+      if (!currentUser) {
+        console.log("HomePage: No user found, redirecting to login")
+        router.replace("/login")
+        return
+      }
 
-        if (hasSupabaseConfig) {
+      console.log("HomePage: User authenticated, loading dashboard data")
+      setIsLoading(true)
+      setUser(currentUser)
+
+      try {
+        if (hasSupabaseConfig && currentUser) {
           // Load real data from Supabase
+          console.log("Loading real data from Supabase")
+          
           const { data: profileData, error: profileError } = await supabase
             .from("profiles")
             .select("*")
@@ -70,6 +80,7 @@ export default function HomePage() {
           }
         } else {
           // Demo mode - use mock data
+          console.log("Loading demo data")
           setProfile({
             id: currentUser.id,
             full_name: currentUser.full_name,
@@ -125,10 +136,28 @@ export default function HomePage() {
       }
     }
 
-    loadDashboardData()
+    handleAuthAndData()
   }, [currentUser, authLoading, hasSupabaseConfig, router])
 
-  if (authLoading || isLoading) {
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              Checking Authentication...
+            </CardTitle>
+            <CardDescription>Please wait while we verify your login status</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show loading while dashboard data is being loaded
+  if (isLoading && currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card>
@@ -144,9 +173,23 @@ export default function HomePage() {
     )
   }
 
+  // If no user after auth check, show redirecting message
   if (!currentUser) {
-    return null // Will redirect to login
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              Redirecting to Login...
+            </CardTitle>
+            <CardDescription>You need to be logged in to access the dashboard</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    )
   }
 
+  // Show dashboard
   return <AssetDashboard user={user} profile={profile} assets={assets} />
 }

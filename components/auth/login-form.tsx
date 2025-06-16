@@ -43,9 +43,9 @@ export default function LoginForm() {
           setError(error.message)
         }
       } else {
-        // Redirect to dashboard (home page)
-        router.push("/")
-        router.refresh()
+        console.log("Login successful, redirecting to dashboard")
+        // Use router.replace to avoid back button issues
+        router.replace("/")
       }
     } catch (err) {
       setError("An unexpected error occurred")
