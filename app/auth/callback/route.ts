@@ -23,8 +23,8 @@ export async function GET(request: Request) {
 
   // Check if we're in demo mode (no Supabase env vars)
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    console.log("Demo mode: redirecting to demo dashboard")
-    return NextResponse.redirect(`${origin}/demo`)
+    console.log("Demo mode: redirecting to dashboard")
+    return NextResponse.redirect(`${origin}/`)
   }
 
   if (code) {
@@ -87,17 +87,17 @@ export async function GET(request: Request) {
           console.log("User profile already exists")
         }
 
-        // Successful authentication
+        // Successful authentication - redirect to dashboard (home page)
         const forwardedHost = request.headers.get("x-forwarded-host")
         const isLocalEnv = process.env.NODE_ENV === "development"
 
-        console.log("Redirecting to:", next)
+        console.log("Redirecting to dashboard")
         if (isLocalEnv) {
-          return NextResponse.redirect(`${origin}${next}`)
+          return NextResponse.redirect(`${origin}/`)
         } else if (forwardedHost) {
-          return NextResponse.redirect(`https://${forwardedHost}${next}`)
+          return NextResponse.redirect(`https://${forwardedHost}/`)
         } else {
-          return NextResponse.redirect(`${origin}${next}`)
+          return NextResponse.redirect(`${origin}/`)
         }
       }
     } catch (err) {

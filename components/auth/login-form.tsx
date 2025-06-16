@@ -43,6 +43,7 @@ export default function LoginForm() {
           setError(error.message)
         }
       } else {
+        // Redirect to dashboard (home page)
         router.push("/")
         router.refresh()
       }
@@ -105,7 +106,7 @@ export default function LoginForm() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Sign in to AssetTracker</CardTitle>
           <CardDescription className="text-center">
-            Enter your email and password to access your account
+            Enter your email and password to access your dashboard
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

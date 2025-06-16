@@ -62,7 +62,7 @@ export default function EnhancedLoginForm() {
   }
 
   const handleQuickDemo = () => {
-    router.push("/demo")
+    router.push("/")
   }
 
   return (
@@ -95,7 +95,7 @@ export default function EnhancedLoginForm() {
               <Shield className="h-6 w-6 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
-            <p className="mt-2 text-gray-600">Sign in to your AssetTracker Pro account</p>
+            <p className="mt-2 text-gray-600">Sign in to your AssetTracker Pro dashboard</p>
           </div>
 
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">

@@ -110,7 +110,7 @@ export default function SignupForm() {
             </Alert>
 
             <div className="text-sm text-gray-600 space-y-2">
-              <p>After clicking the link, you'll be redirected back to the application.</p>
+              <p>After clicking the link, you'll be redirected back to your dashboard.</p>
               <p className="text-xs">If you don't see the email, check your spam folder.</p>
             </div>
 
