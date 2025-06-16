@@ -33,6 +33,8 @@ import Image from "next/image"
 import QRGenerator from "./qr-generator"
 import QRScanner from "./qr-scanner"
 import BulkQROperations from "./bulk-qr-operations"
+import AddAssetForm from "./add-asset-form"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface Profile {
   id: string
@@ -65,16 +67,46 @@ interface AssetDashboardProps {
 export default function AssetDashboard({ user, profile, assets }: AssetDashboardProps) {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [searchTerm, setSearchTerm] = useState("")
+  const [showAddAssetForm, setShowAddAssetForm] = useState(false)
   const router = useRouter()
 
   const handleSignOut = async () => {
-    await signOut()
-    router.push("/login")
-    router.refresh()
+    try {
+      await signOut()
+    } catch (error) {
+      // If signOut fails (e.g., in demo mode), just redirect
+      router.push("/login")
+      router.refresh()
+    }
   }
 
   const handleAddAsset = () => {
-    router.push("/add-asset")
+    // Check if we have Supabase config (real mode vs demo mode)
+    const hasSupabaseConfig = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!hasSupabaseConfig) {
+      // Demo mode - show alert
+      alert("Demo Mode: Asset creation is not available in demo mode. This feature works when connected to a real database.")
+      return
+    }
+
+    // Real mode - check if user has profile
+    if (!profile) {
+      alert("Please complete your profile setup first before adding assets.")
+      router.push("/profile-setup")
+      return
+    }
+
+    // Show the add asset form
+    setShowAddAssetForm(true)
+    setActiveTab("add-asset")
+  }
+
+  const handleAssetAdded = () => {
+    // Asset was successfully added, refresh the page to show it
+    setShowAddAssetForm(false)
+    setActiveTab("dashboard")
+    window.location.reload()
   }
 
   // Calculate analytics from real data
@@ -173,6 +205,10 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
     )
   }
 
+  // Check if we're in demo mode
+  const hasSupabaseConfig = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const isDemo = !hasSupabaseConfig
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -182,6 +218,11 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
             <div className="flex items-center space-x-2">
               <Package className="h-8 w-8 text-blue-600" />
               <h1 className="text-2xl font-bold text-gray-900">AssetTracker Pro</h1>
+              {isDemo && (
+                <Badge variant="secondary" className="ml-2">
+                  Demo Mode
+                </Badge>
+              )}
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -212,7 +253,10 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
             <Button
               variant={activeTab === "dashboard" ? "default" : "ghost"}
               className="w-full justify-start"
-              onClick={() => setActiveTab("dashboard")}
+              onClick={() => {
+                setActiveTab("dashboard")
+                setShowAddAssetForm(false)
+              }}
             >
               <BarChart3 className="h-4 w-4 mr-2" />
               Dashboard
@@ -220,15 +264,29 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
             <Button
               variant={activeTab === "assets" ? "default" : "ghost"}
               className="w-full justify-start"
-              onClick={() => setActiveTab("assets")}
+              onClick={() => {
+                setActiveTab("assets")
+                setShowAddAssetForm(false)
+              }}
             >
               <Package className="h-4 w-4 mr-2" />
               Asset Management
             </Button>
             <Button
+              variant={activeTab === "add-asset" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={handleAddAsset}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Asset
+            </Button>
+            <Button
               variant={activeTab === "qr" ? "default" : "ghost"}
               className="w-full justify-start"
-              onClick={() => setActiveTab("qr")}
+              onClick={() => {
+                setActiveTab("qr")
+                setShowAddAssetForm(false)
+              }}
             >
               <QrCode className="h-4 w-4 mr-2" />
               QR Code Tools
@@ -236,7 +294,10 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
             <Button
               variant={activeTab === "team" ? "default" : "ghost"}
               className="w-full justify-start"
-              onClick={() => setActiveTab("team")}
+              onClick={() => {
+                setActiveTab("team")
+                setShowAddAssetForm(false)
+              }}
             >
               <Users className="h-4 w-4 mr-2" />
               Team Collaboration
@@ -244,7 +305,10 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
             <Button
               variant={activeTab === "security" ? "default" : "ghost"}
               className="w-full justify-start"
-              onClick={() => setActiveTab("security")}
+              onClick={() => {
+                setActiveTab("security")
+                setShowAddAssetForm(false)
+              }}
             >
               <Shield className="h-4 w-4 mr-2" />
               Security
@@ -254,7 +318,38 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
 
         {/* Main Content */}
         <main className="flex-1 p-6">
-          {activeTab === "dashboard" && (
+          {/* Add Asset Form */}
+          {showAddAssetForm && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-gray-900">Add New Asset</h2>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowAddAssetForm(false)
+                    setActiveTab("dashboard")
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+              
+              {isDemo ? (
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Demo Mode:</strong> Asset creation is not available in demo mode. 
+                    This feature works when connected to a real database with Supabase.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <AddAssetForm onSuccess={handleAssetAdded} />
+              )}
+            </div>
+          )}
+
+          {/* Dashboard Tab */}
+          {activeTab === "dashboard" && !showAddAssetForm && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
@@ -269,6 +364,15 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
                   </Button>
                 </div>
               </div>
+
+              {isDemo && (
+                <Alert className="border-blue-200 bg-blue-50">
+                  <AlertTriangle className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800">
+                    <strong>Demo Mode:</strong> You're viewing sample data. Connect to Supabase to manage real assets.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Analytics Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -387,7 +491,7 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
             </div>
           )}
 
-          {activeTab === "assets" && (
+          {activeTab === "assets" && !showAddAssetForm && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-gray-900">Asset Management</h2>
@@ -490,7 +594,7 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
             </div>
           )}
 
-          {activeTab === "qr" && (
+          {activeTab === "qr" && !showAddAssetForm && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-gray-900">QR Code Tools</h2>
@@ -575,7 +679,7 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
             </div>
           )}
 
-          {activeTab === "team" && (
+          {activeTab === "team" && !showAddAssetForm && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-gray-900">Team Collaboration</h2>
@@ -642,7 +746,7 @@ export default function AssetDashboard({ user, profile, assets }: AssetDashboard
             </div>
           )}
 
-          {activeTab === "security" && (
+          {activeTab === "security" && !showAddAssetForm && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-gray-900">Security Settings</h2>

@@ -10,17 +10,18 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useRouter } from "next/navigation"
 import { Package, Loader2, AlertTriangle, Settings } from "lucide-react"
 import { addAsset } from "@/lib/asset-actions"
 import ProfileSetup from "./profile-setup"
-import Link from "next/link"
 
-export default function AddAssetForm() {
+interface AddAssetFormProps {
+  onSuccess?: () => void
+}
+
+export default function AddAssetForm({ onSuccess }: AddAssetFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
-  const router = useRouter()
 
   const [formData, setFormData] = useState({
     asset_id: "",
@@ -62,9 +63,11 @@ export default function AddAssetForm() {
           location: "",
           value: "",
         })
-        // Redirect to dashboard after a short delay
+        // Call success callback after a short delay
         setTimeout(() => {
-          router.push("/")
+          if (onSuccess) {
+            onSuccess()
+          }
         }, 1500)
       }
     } catch (err) {
@@ -114,10 +117,10 @@ export default function AddAssetForm() {
                     </p>
                     <div className="space-y-2">
                       <Button asChild size="sm" variant="outline">
-                        <Link href="/profile-setup">
+                        <a href="/profile-setup">
                           <Settings className="h-4 w-4 mr-2" />
                           Go to Profile Setup
-                        </Link>
+                        </a>
                       </Button>
                     </div>
                   </div>
@@ -129,7 +132,7 @@ export default function AddAssetForm() {
           {success && (
             <Alert className="mb-4 border-green-200 bg-green-50">
               <AlertDescription className="text-green-800">
-                ✅ Asset added successfully! Redirecting to dashboard...
+                ✅ Asset added successfully! Returning to dashboard...
               </AlertDescription>
             </Alert>
           )}
@@ -249,9 +252,6 @@ export default function AddAssetForm() {
                     Add Asset
                   </>
                 )}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => router.back()}>
-                Cancel
               </Button>
             </div>
           </form>
