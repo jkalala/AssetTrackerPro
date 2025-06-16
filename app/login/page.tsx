@@ -1,7 +1,7 @@
 "use client"
 
-import LoginForm from "@/components/auth/login-form"
+import EnhancedLoginForm from "@/components/auth/enhanced-login-form"
 
 export default function LoginPage() {
-  return <LoginForm />
+  return <EnhancedLoginForm />
 }

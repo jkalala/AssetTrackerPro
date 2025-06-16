@@ -88,7 +88,7 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true)
 
     // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     const demoUser = DEMO_USERS.find((u) => u.email === email && u.password === password)
 

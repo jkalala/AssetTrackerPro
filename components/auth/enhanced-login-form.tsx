@@ -37,10 +37,12 @@ export default function EnhancedLoginForm() {
     try {
       if (isDemo && demoAuth) {
         // Demo mode login
+        console.log("Attempting demo login with:", email)
         const result = await demoAuth.signIn(email, password)
         if (result.success) {
           console.log("Demo login successful, redirecting to dashboard")
-          router.replace("/")
+          // Force a page reload to ensure the auth state is properly updated
+          window.location.href = "/"
         } else {
           setError(result.error || "Login failed")
         }
@@ -63,14 +65,20 @@ export default function EnhancedLoginForm() {
 
   const handleQuickDemo = async () => {
     if (isDemo && demoAuth) {
+      setLoading(true)
       // Auto-login with demo credentials
+      console.log("Quick demo login attempt")
       const result = await demoAuth.signIn("demo@assettracker.com", "demo123")
       if (result.success) {
         console.log("Quick demo login successful, redirecting to dashboard")
-        router.replace("/")
+        // Force a page reload to ensure the auth state is properly updated
+        window.location.href = "/"
+      } else {
+        setError("Quick demo login failed")
+        setLoading(false)
       }
     } else {
-      router.replace("/")
+      window.location.href = "/"
     }
   }
 
@@ -182,8 +190,13 @@ export default function EnhancedLoginForm() {
                   <span className="font-medium text-green-800">Quick Demo Access</span>
                 </div>
                 <p className="text-sm text-green-700 mb-3">Skip login and explore the system with sample data</p>
-                <Button onClick={handleQuickDemo} variant="outline" className="w-full border-green-300 text-green-700">
-                  Access Demo Dashboard
+                <Button 
+                  onClick={handleQuickDemo} 
+                  variant="outline" 
+                  className="w-full border-green-300 text-green-700"
+                  disabled={loading}
+                >
+                  {loading ? "Logging in..." : "Access Demo Dashboard"}
                 </Button>
               </div>
 

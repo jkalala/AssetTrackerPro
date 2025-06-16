@@ -42,7 +42,7 @@ export default function HomePage() {
         return
       }
 
-      console.log("HomePage: User authenticated, loading dashboard data")
+      console.log("HomePage: User authenticated:", currentUser.email, "Loading dashboard data")
       setIsLoading(true)
       setUser(currentUser)
 
@@ -80,7 +80,7 @@ export default function HomePage() {
           }
         } else {
           // Demo mode - use mock data
-          console.log("Loading demo data")
+          console.log("Loading demo data for user:", currentUser.email)
           setProfile({
             id: currentUser.id,
             full_name: currentUser.full_name,
