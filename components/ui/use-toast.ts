@@ -9,7 +9,7 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -25,9 +25,19 @@ const actionTypes = {
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const
 
+// Global state variables - initialized only on client side
 let count = 0
+let memoryState: State = { toasts: [] }
+let listeners: Array<(state: State) => void> = []
+let toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
+
+function initializeGlobalState() {
+  if (typeof window === 'undefined') return false
+  return true
+}
 
 function genId() {
+  if (!initializeGlobalState()) return '0'
   count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
 }
@@ -56,9 +66,9 @@ interface State {
   toasts: ToasterToast[]
 }
 
-const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
-
 const addToRemoveQueue = (toastId: string) => {
+  if (!initializeGlobalState()) return
+  
   if (toastTimeouts.has(toastId)) {
     return
   }
@@ -129,11 +139,9 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
-const listeners: Array<(state: State) => void> = []
-
-let memoryState: State = { toasts: [] }
-
 function dispatch(action: Action) {
+  if (!initializeGlobalState()) return
+  
   memoryState = reducer(memoryState, action)
   listeners.forEach((listener) => {
     listener(memoryState)
@@ -172,6 +180,14 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
+  if (!initializeGlobalState()) {
+    return {
+      toasts: [],
+      toast: () => ({ id: '0', dismiss: () => {}, update: () => {} }),
+      dismiss: () => {},
+    }
+  }
+
   const [state, setState] = React.useState<State>(memoryState)
 
   React.useEffect(() => {
